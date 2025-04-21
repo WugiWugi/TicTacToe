@@ -70,19 +70,7 @@ window.addEventListener('load', () => {
     if (player === 'o') {
         bot()
         botCell = document.querySelector(`.game-button-${botIndex + 1}`)
-        if (botCell) {
-            botCell.textContent = playerBot
-        }
-        botWinnerCombo = combination.find(([a, b, c]) => cell[a] !== '' && cell[a] === cell[b] && cell[a] === cell[c])
-        if (botWinnerCombo) {
-            indentation.classList.remove('indentation-from-the-top')
-            result.textContent = `You win!`
-            lossSound.play()
-        } else if (cell.every(cell => cell !== '') && !botWinnerCombo) {
-            indentation.classList.remove('indentation-from-the-top')
-            result.textContent = `Looks like it's a draw`
-            drawSound.play()
-        }
+        if (botCell) botCell.textContent = playerBot
     }
 
     function waitForPlayer() {
@@ -97,7 +85,7 @@ window.addEventListener('load', () => {
                     winnerCombo = combination.find(([a, b, c]) => cell[a] !== '' && cell[a] === cell[b] && cell[a] === cell[c])
                     if (winnerCombo) {
                         indentation.classList.remove('indentation-from-the-top')
-                        result.textContent = `Player ${cell[winnerCombo[0]]} win!!!`
+                        result.textContent = `You win!!!`
                         winnerSound.play()
                         return
                     } else if (cell.every(cell => cell !== '') && !winnerCombo) {
@@ -119,9 +107,7 @@ window.addEventListener('load', () => {
             await waitForPlayer();
             bot()
             botCell = document.querySelector(`.game-button-${botIndex + 1}`)
-            if (botCell) {
-                botCell.textContent = playerBot
-            }
+            if (botCell) botCell.textContent = playerBot
             botWinnerCombo = combination.find(([a, b, c]) => cell[a] !== '' && cell[a] === cell[b] && cell[a] === cell[c])
             if (botWinnerCombo) {
                 indentation.classList.remove('indentation-from-the-top')
