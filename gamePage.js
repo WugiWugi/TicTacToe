@@ -18,6 +18,72 @@ window.addEventListener('load', () => {
     const combination = [[0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6], [1, 4, 7], [2, 5, 8], [2, 4, 6], [0, 4, 8]]
     let winnerCombo
     let botWinnerCombo
+    let botIndex
+    let botCell
+
+    function bot() {
+        const botWinnerCombination = combination.find(([a, b, c]) =>
+            cell[a] === playerBot && cell[b] === playerBot && cell[c] === '' ||
+            cell[a] === playerBot && cell[b] === '' && cell[c] === playerBot ||
+            cell[a] === '' && cell[b] === playerBot && cell[c] === playerBot)
+        const closePlayer = combination.find(([a, b, c]) =>
+            cell[a] === player && cell[b] === player && cell[c] === '' ||
+            cell[a] === player && cell[b] === '' && cell[c] === player ||
+            cell[a] === '' && cell[b] === player && cell[c] === player)
+        if (botWinnerCombination) {
+            const [a, b, c] = botWinnerCombination
+            if (cell[a] === '' && cell[b] === playerBot && cell[c] === playerBot) {
+                cell[a] = playerBot
+                botIndex = a
+            } else if (cell[a] === playerBot && cell[b] === '' && cell[c] === playerBot) {
+                cell[b] = playerBot
+                botIndex = b
+            } else if (cell[a] === playerBot && cell[b] === playerBot && cell[c] === '') {
+                cell[c] = playerBot
+                botIndex = c
+            }
+        } else if (closePlayer) {
+            const [a, b, c] = closePlayer
+            if (cell[a] === '' && cell[b] === player && cell[c] === player) {
+                cell[a] = playerBot
+                botIndex = a
+            } else if (cell[a] === player && cell[b] === '' && cell[c] === player) {
+                cell[b] = playerBot
+                botIndex = b
+            } else if (cell[a] === player && cell[b] === player && cell[c] === '') {
+                cell[c] = playerBot
+                botIndex = c
+            }
+        } else if (!botWinnerCombination && !closePlayer) {
+            const availableIndexes = cell
+                .map((value, index) => value === '' ? index : null)
+                .filter(index => index !== null)
+
+            if (availableIndexes.length > 0) {
+                const randomIndex = availableIndexes[Math.floor(Math.random() * availableIndexes.length)]
+                cell[randomIndex] = playerBot
+                botIndex = randomIndex
+            }
+        }
+    }
+
+    if (player === 'o') {
+        bot()
+        botCell = document.querySelector(`.game-button-${botIndex + 1}`)
+        if (botCell) {
+            botCell.textContent = playerBot
+        }
+        botWinnerCombo = combination.find(([a, b, c]) => cell[a] !== '' && cell[a] === cell[b] && cell[a] === cell[c])
+        if (botWinnerCombo) {
+            indentation.classList.remove('indentation-from-the-top')
+            result.textContent = `You win!`
+            lossSound.play()
+        } else if (cell.every(cell => cell !== '') && !botWinnerCombo) {
+            indentation.classList.remove('indentation-from-the-top')
+            result.textContent = `Looks like it's a draw`
+            drawSound.play()
+        }
+    }
 
     function waitForPlayer() {
         return new Promise((resolve) => {
@@ -48,65 +114,18 @@ window.addEventListener('load', () => {
             })
         })
     }
-
     (async () => {
         while (true) {
             await waitForPlayer();
-            let botIndex
-            (function bot() {
-                const botWinnerCombination = combination.find(([a, b, c]) =>
-                    cell[a] === playerBot && cell[b] === playerBot && cell[c] === '' ||
-                    cell[a] === playerBot && cell[b] === '' && cell[c] === playerBot ||
-                    cell[a] === '' && cell[b] === playerBot && cell[c] === playerBot)
-                const closePlayer = combination.find(([a, b, c]) =>
-                    cell[a] === player && cell[b] === player && cell[c] === '' ||
-                    cell[a] === player && cell[b] === '' && cell[c] === player ||
-                    cell[a] === '' && cell[b] === player && cell[c] === player)
-                if (botWinnerCombination) {
-                    const [a, b, c] = botWinnerCombination
-                    if (cell[a] === '' && cell[b] === playerBot && cell[c] === playerBot) {
-                        cell[a] = playerBot
-                        botIndex = a
-                    } else if (cell[a] === playerBot && cell[b] === '' && cell[c] === playerBot) {
-                        cell[b] = playerBot
-                        botIndex = b
-                    } else if (cell[a] === playerBot && cell[b] === playerBot && cell[c] === '') {
-                        cell[c] = playerBot
-                        botIndex = c
-                    }
-                } else if (closePlayer) {
-                    const [a, b, c] = closePlayer
-                    if (cell[a] === '' && cell[b] === player && cell[c] === player) {
-                        cell[a] = playerBot
-                        botIndex = a
-                    } else if (cell[a] === player && cell[b] === '' && cell[c] === player) {
-                        cell[b] = playerBot
-                        botIndex = b
-                    } else if (cell[a] === player && cell[b] === player && cell[c] === '') {
-                        cell[c] = playerBot
-                        botIndex = c
-                    }
-                } else if (!botWinnerCombination && !closePlayer) {
-                    const availableIndexes = cell
-                        .map((value, index) => value === '' ? index : null)
-                        .filter(index => index !== null)
-                    
-                    if (availableIndexes.length > 0) {
-                        const randomIndex = availableIndexes[Math.floor(Math.random() * availableIndexes.length)]
-                        cell[randomIndex] = playerBot
-                        botIndex = randomIndex
-                    }
-                }
-            })()
-            
-            const botCell = document.querySelector(`.game-button-${botIndex + 1}`)
+            bot()
+            botCell = document.querySelector(`.game-button-${botIndex + 1}`)
             if (botCell) {
                 botCell.textContent = playerBot
             }
             botWinnerCombo = combination.find(([a, b, c]) => cell[a] !== '' && cell[a] === cell[b] && cell[a] === cell[c])
             if (botWinnerCombo) {
                 indentation.classList.remove('indentation-from-the-top')
-                result.textContent = `Player ${cell[botWinnerCombo[0]]} win!!!`
+                result.textContent = `You loce`
                 lossSound.play()
                 break;
             } else if (cell.every(cell => cell !== '') && !botWinnerCombo) {
@@ -115,6 +134,7 @@ window.addEventListener('load', () => {
                 drawSound.play()
                 break;
             }
+
         }
     })()
 })
